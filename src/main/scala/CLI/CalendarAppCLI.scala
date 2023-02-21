@@ -24,8 +24,6 @@ class CalendarAppCLI(val calendarApp: CalendarApp):
 
     println("this week's events:\n")
 
-    for e <- calendarApp.fetchEvents do println(e)
-
   def requestCommand(): String =
 
     var valid = false

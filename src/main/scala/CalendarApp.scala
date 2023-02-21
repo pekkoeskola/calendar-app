@@ -2,30 +2,39 @@ package CalendarApp
 
 import scala.collection.mutable.Buffer
 
-import java.util.Date
+import java.time.LocalDateTime
 
 class CalendarApp:
+
+  //may need updating
+  var currentTime = LocalDateTime.now()
 
   val calendars = Buffer[Calendar]()
 
   //stub
   def startUp() =
 
-    this.addCalendar(Calendar("test", Buffer(Event("event1", new Date, new Date))))
+    currentTime = LocalDateTime.now()
+
+    this.addCalendar(Calendar("test", Buffer(Event("event1", LocalDateTime.now(), LocalDateTime.now().plusHours(1)))))
+
+    this.addEvent(calendars(0), Event("Event2", LocalDateTime.now().plusWeeks(2), LocalDateTime.now().plusWeeks(2)))
 
   def addCalendar(calendar: Calendar) = calendars += calendar
 
-  def addEvent(event: Event, calendar: Calendar) = calendar.addEvent(event) 
+  def addEvent(calendar: Calendar, event: Event) = calendar.addEvent(event) 
 
-  def deleteEvent(event: Event, calendar: Calendar) = calendar.deleteEvent(event)
+  def deleteEvent(calendar: Calendar, event: Event) = calendar.deleteEvent(event)
 
-  //stub, actual implementation takes in an interval as parameter
-  def fetchEvents: Vector[Event] = 
 
-    val ret = Buffer[Event]()
+  def fetchEvents(between: Interval) : Vector[Event] = 
+
+    val retevents = Buffer[Event]()
 
     for c <- this.calendars
-      e <- c.events
-    do ret += e
+      e <- c.events if between.contains(e)
+    do retevents += e
 
-    ret.toVector
+    retevents.toVector
+
+  

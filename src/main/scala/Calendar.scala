@@ -2,8 +2,18 @@ package CalendarApp
 
 import scala.collection.mutable.Buffer
 
-class Calendar(var name: String, val events: Buffer[Event]):
+class Calendar(var name: String):
 
-  def addEvent(event: Event) = events += event
+  def this(name: String, events: Buffer[Event]) = 
+    this(name)
+    _events = events
 
-  def deleteEvent(event: Event) = events -= event
+
+  private var _events = Buffer[Event]()
+
+  def events = _events.toVector
+  
+
+  def addEvent(event: Event) = _events += event
+
+  def deleteEvent(event: Event) = _events -= event

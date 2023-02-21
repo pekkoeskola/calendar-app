@@ -1,11 +1,11 @@
 package CalendarApp
 
-import java.util.Date
+import java.time.LocalDateTime
 
 class Event(
   var name: String, 
-  var startTime: Date, 
-  var endTime: Date, 
+  var startTime: LocalDateTime, 
+  var endTime: LocalDateTime, 
   var Location: Option[String] = None,
   var eventCategory: Option[EventCategory] = None):
 

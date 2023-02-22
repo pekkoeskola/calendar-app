@@ -5,24 +5,41 @@ import scala.io.StdIn.readLine
 
 class CalendarAppCLI(val calendarApp: CalendarApp):
 
-  val validCommands = Set("exit")
+  val validCommands = Set("exit", "next", "previous")
 
   def run() = 
 
     println("Welcome to CalendarApp")
     println()
 
-    weeklyview()
+    printView()
 
     var exit = false
 
     while !exit do
 
-      if requestCommand() == "exit" then exit = true else exit = false
+      println()
 
-  def weeklyview(): Unit =
+      requestCommand() match
+        case "next" =>
+          calendarApp.nextView()
+          printView()
+        case "previous" =>
+          calendarApp.previousView()
+          printView()
+        case "exit" => exit = true
+        case _ => println("oops")
 
-    println("this week's events:\n")
+  def printView() =
+
+    println()
+
+    val q = calendarApp.getView()
+
+    println(q(0))
+    for i <- q(1) do
+      println(i)
+
 
   def requestCommand(): String =
 

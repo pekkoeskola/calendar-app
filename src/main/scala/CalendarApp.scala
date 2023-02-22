@@ -2,7 +2,7 @@ package CalendarApp
 
 import scala.collection.mutable.Buffer
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 
 class CalendarApp:
 
@@ -11,6 +11,13 @@ class CalendarApp:
 
   val calendars = Buffer[Calendar]()
 
+  var dateCursor = LocalDate.now()
+
+  var currentView: CalendarView = WeekView(Week.getWeek(currentTime))
+
+  var currentViewEvents = fetchEvents(currentView)
+
+
   //stub
   def startUp() =
 
@@ -18,7 +25,10 @@ class CalendarApp:
 
     this.addCalendar(Calendar("test", Buffer(Event("event1", LocalDateTime.now(), LocalDateTime.now().plusHours(1)))))
 
-    this.addEvent(calendars(0), Event("Event2", LocalDateTime.now().plusWeeks(2), LocalDateTime.now().plusWeeks(2)))
+    this.addEvent(calendars(0), Event("Event2", LocalDateTime.now().plusWeeks(1), LocalDateTime.now().plusWeeks(1)))
+
+    currentViewEvents = fetchEvents(currentView)
+
 
   def addCalendar(calendar: Calendar) = calendars += calendar
 
@@ -27,12 +37,35 @@ class CalendarApp:
   def deleteEvent(calendar: Calendar, event: Event) = calendar.deleteEvent(event)
 
 
-  def fetchEvents(between: Interval) : Vector[Event] = 
+  def changeViewType(i: Int) =
+
+    currentView = CalendarView.changeViewType(dateCursor.atStartOfDay(), i)
+
+    currentViewEvents = fetchEvents(currentView)
+
+  def nextView() = 
+    
+    currentView = currentView.next
+
+    currentViewEvents = fetchEvents(currentView)
+
+  def previousView() = 
+
+    currentView = currentView.previous
+    
+    currentViewEvents = fetchEvents(currentView)
+
+  def getView(): (CalendarView, Vector[Event]) = 
+
+    (currentView, currentViewEvents)
+
+
+  def fetchEvents(v :CalendarView): Vector[Event] = 
 
     val retevents = Buffer[Event]()
 
     for c <- this.calendars
-      e <- c.events if between.contains(e)
+      e <- c.events if v.interval.contains(e)
     do retevents += e
 
     retevents.toVector

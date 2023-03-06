@@ -1,0 +1,9 @@
+Interim Report Monday 6.3
+
+Most of the core logic is now written, with some methods missing concrete implementations. Refactoring to come, but for now some features already work and so there is technically a working app through the CLI. At this point the only working command is browsing through weekly event summaries. 
+
+There is some deviation from the original technical plan already, namely the Interval and CalendarView classes which weren't really covered there. These two classes are actually next in line to likely be reworked. 
+
+The biggest challenge so far was trying to figure out how to work with time and dates. Initally the plan was to use such tools as java.utils.Date and java.utils.GregorianCalendar but while looking for a solution to get them working I came across the new java.time package which is a much-improved approach to handling time, and proved to be a joy to use due to its more functional and scala-idiomatic nature.
+
+Up till this point the project has used up around 10-15 working hours. I've been quite busy with other coursework, so I'm a bit behind on schedule, not having practiced scalaFX as much as I intended at this point. The goal is to resume working on the project some time next week, starting with the aforementioned task, since implementing the UI seems like the logical next step in terms of development of the app.

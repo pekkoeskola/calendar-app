@@ -1,6 +1,6 @@
 Interim Report Monday 6.3
 
-Most of the core logic is now written, with some methods missing concrete implementations. Refactoring to come, but for now some features already work and so there is technically a working app through the CLI. At this point the only working command is browsing through weekly event summaries. 
+Most of the core logic is now written, with some methods missing concrete implementations. Refactoring to come, but for now some features already work and so there is technically a working app through the CLI. At this point the only working command is browsing through weekly event summaries. No properly thought out testing efforts yet, but some toying around with the CLI and basic features of the CalendarApp class which seem to be working.
 
 There is some deviation from the original technical plan already, namely the Interval and CalendarView classes which weren't really covered there. These two classes are actually next in line to likely be reworked. 
 

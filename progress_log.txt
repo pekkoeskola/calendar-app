@@ -7,3 +7,11 @@ There is some deviation from the original technical plan already, namely the Int
 The biggest challenge so far was trying to figure out how to work with time and dates. Initally the plan was to use such tools as java.utils.Date and java.utils.GregorianCalendar but while looking for a solution to get them working I came across the new java.time package which is a much-improved approach to handling time, and proved to be a joy to use due to its more functional and scala-idiomatic nature.
 
 Up till this point the project has used up around 10-15 working hours. I've been quite busy with other coursework, so I'm a bit behind on schedule, not having practiced scalaFX as much as I intended at this point. The goal is to resume working on the project some time next week, starting with the aforementioned task, since implementing the UI seems like the logical next step in terms of development of the app.
+
+Interim Report Sunday 19.3
+
+Development hasn't progressed significantly since the last report, as I've been quite busy with other coursework. This is not yet a huge problem though, since quite a bit of the groundwork has already been laid out. Still, it would soon be time for another sprint to make larger strides towards a complete app, since the halfway point in the schedule is on the horizon.
+
+I have had some time to play around with ScalaFX however, and am starting to get the hang of it. As such, beginning to work on the GUI seems like the natural next step, particularly with a good portion of the background logic already implemented. This would align with the plan as well.
+
+After the GUI begins to take shape, it will guide further development of the api between it and the background logic. Features such as saving and opening calendar files and search can wait until a working basic app is up and running.

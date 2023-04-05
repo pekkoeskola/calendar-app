@@ -15,3 +15,9 @@ Development hasn't progressed significantly since the last report, as I've been 
 I have had some time to play around with ScalaFX however, and am starting to get the hang of it. As such, beginning to work on the GUI seems like the natural next step, particularly with a good portion of the background logic already implemented. This would align with the plan as well.
 
 After the GUI begins to take shape, it will guide further development of the api between it and the background logic. Features such as saving and opening calendar files and search can wait until a working basic app is up and running.
+
+Interim Report Wednesday 5.4 (late from 3.4)
+
+I've been quite busy with other coursework and duties, so have not really made any botable progress since the last report. The same next steps stand that were laid out in the previous interim report.
+
+I'm aware of the approaching deadline, so I will have to get on top of the project soon. Thankfully that should be possible towards the end of this week, and in the coming weeks it seems the workload for other courses has come down so I can start focusing on this project.

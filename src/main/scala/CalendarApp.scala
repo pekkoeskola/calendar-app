@@ -60,7 +60,7 @@ class CalendarApp:
     (currentView, currentViewEvents)
 
 
-  def fetchEvents(v :CalendarView): Vector[Event] = 
+  private def fetchEvents(v :CalendarView): Vector[Event] = 
 
     val retevents = Buffer[Event]()
 

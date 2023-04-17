@@ -17,7 +17,6 @@ class CalendarApp:
 
   var currentViewEvents = fetchEvents(currentView)
 
-
   //stub
   def startUp() =
 

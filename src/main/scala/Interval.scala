@@ -1,6 +1,6 @@
 package CalendarApp
 
-import java.time.{LocalDate, LocalDateTime, DayOfWeek}
+import java.time.{LocalDate, LocalDateTime, DayOfWeek, Year}
 import java.time.temporal.{TemporalAdjusters, ChronoUnit}
 
 sealed abstract class Interval(val start: LocalDateTime, val end: LocalDateTime): 
@@ -54,6 +54,8 @@ class Month(start: LocalDateTime, end : LocalDateTime) extends Interval(start, e
   def next = Month(start.plusMonths(1), end.plusMonths(1))
 
   def previous = Month(start.minusMonths(1), end.minusMonths(1))
+
+  def daysInMonth = start.getMonth().length(Year.of(start.getYear()).isLeap())
 
   override def toString(): String = s"Month from $start to $end"  
 

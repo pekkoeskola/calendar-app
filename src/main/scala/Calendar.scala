@@ -4,10 +4,10 @@ import scala.collection.mutable.Buffer
 
 class Calendar(var name: String):
 
+  //constructor
   def this(name: String, events: Buffer[Event]) = 
     this(name)
     _events = events
-
 
   private var _events = Buffer[Event]()
 

@@ -22,7 +22,7 @@ I've been quite busy with other coursework and duties, so have not really made a
 
 I'm aware of the approaching deadline, so I will have to get on top of the project soon. Thankfully that should be possible towards the end of this week, and in the coming weeks it seems the workload for other courses has come down so I can start focusing on this project.
 
-Interim Report Monday 18.4
+Interim Report Monday 17.4
 
 I've made some progress on the GUI, finally gotten the hang of ScalaFX. Now in the process of connecting at least some of the application logic to the GUI. Still missing some details from the core logic implementation (most importantly file I/O). 
 

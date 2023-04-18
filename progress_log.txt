@@ -21,3 +21,9 @@ Interim Report Wednesday 5.4 (late from 3.4)
 I've been quite busy with other coursework and duties, so have not really made any botable progress since the last report. The same next steps stand that were laid out in the previous interim report.
 
 I'm aware of the approaching deadline, so I will have to get on top of the project soon. Thankfully that should be possible towards the end of this week, and in the coming weeks it seems the workload for other courses has come down so I can start focusing on this project.
+
+Interim Report Monday 18.4
+
+I've made some progress on the GUI, finally gotten the hang of ScalaFX. Now in the process of connecting at least some of the application logic to the GUI. Still missing some details from the core logic implementation (most importantly file I/O). 
+
+Still a long way to a completed project, but I don't see too many challenges ahead, mostly fairly standard development. Most of my time leading up to the deadline now is reserved for finishing it, so I'm not too worried yet about being able to finish everything on time, though I do still have to put in a good amount of hours.

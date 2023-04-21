@@ -4,18 +4,24 @@ import scala.collection.mutable.Buffer
 
 import java.time.{LocalDate, LocalDateTime}
 
+
+
+/**This class defines a running instance of CalendarApp. It acts as an API for connecting 
+ * the core logic of the App to a UI; UI's communicate with the core logic primarily through 
+ * this class and exclusively to modify data.
+  */
 class CalendarApp:
 
   //may need updating
-  var currentTime = LocalDateTime.now()
+  private var currentTime = LocalDateTime.now()
 
-  val calendars = Buffer[Calendar]()
+  private val calendars = Buffer[Calendar]()
 
-  var dateCursor = LocalDate.now()
+  private var dateCursor = LocalDate.now()
 
-  var currentView: CalendarView = MonthView(Month.getMonth(currentTime))
+  private var currentView: CalendarView = MonthView(Month.getMonth(currentTime))
 
-  var currentViewEvents = fetchEvents(currentView)
+  private var currentViewEvents = fetchEvents(currentView)
 
   //stub
   def startUp() =
@@ -31,33 +37,26 @@ class CalendarApp:
 
   def addCalendar(calendar: Calendar) = calendars += calendar
 
+
   def addEvent(calendar: Calendar, event: Event) = calendar.addEvent(event) 
 
   def deleteEvent(calendar: Calendar, event: Event) = calendar.deleteEvent(event)
 
 
   def changeViewType(i: Int) =
-
     currentView = CalendarView.changeViewType(dateCursor.atStartOfDay(), i)
-
     currentViewEvents = fetchEvents(currentView)
 
   def nextView() = 
-    
     currentView = currentView.next
-
     currentViewEvents = fetchEvents(currentView)
 
   def previousView() = 
-
     currentView = currentView.previous
-    
     currentViewEvents = fetchEvents(currentView)
 
-  def getView(): (CalendarView, Vector[Event]) = 
 
-    (currentView, currentViewEvents)
-
+  def getView(): (CalendarView, Vector[Event]) = (currentView, currentViewEvents)
 
   private def fetchEvents(v :CalendarView): Vector[Event] = 
 

@@ -3,6 +3,7 @@ package GUI
 
 import scala.collection.mutable.Buffer
 
+import scalafx.Includes._
 import scalafx.application.JFXApp3
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
@@ -35,21 +36,22 @@ import scalafx.scene.layout.CornerRadii
 import scalafx.beans.property.BooleanProperty
 import scalafx.scene.layout.Pane
 import scalafx.scene.Node
+import scalafx.scene.control.ChoiceBox
+import scalafx.collections.ObservableBuffer
+import scalafx.beans.property.StringProperty
 
 object CalendarAppGUI extends JFXApp3{
   def start(): Unit = {
 
+    //initialisation
+    
     val AppInstance = new CalendarApp
 
     AppInstance.startUp()
 
-    val monthViewBuilder = MonthView(AppInstance)
+    val viewBuilder = GUICalendarView(AppInstance)
 
-    val update = BooleanProperty(false)
-
-    val Button2 = new Button("Button2")
-
-    val months = ObjectProperty(monthViewBuilder.centerContent)
+    //build ui
 
     val leftButtons = new HBox{
       children = Seq(
@@ -57,28 +59,27 @@ object CalendarAppGUI extends JFXApp3{
           text = "New Event"
         },
         new Text{
-          text = "Month here"
+          text <== viewBuilder.caption
         }
       )
     }
 
-    val rightButton = new Button{
-          text = ">"
-          onAction = {e =>
-            monthViewBuilder.update()
-            months() = monthViewBuilder.centerContent
-          }
-    }
+    val viewChoices = ObservableBuffer("Day", "Week", "Month")
+    val viewChoiceBox = new ChoiceBox(viewChoices)
 
     val rightButtons = new HBox{
       children = Seq(
-        new Button{
-          text = "change view"
-        },
+        viewChoiceBox,
         new Button{
           text = "<"
+          onAction = {e =>
+            viewBuilder.previousView()}
         },
-        rightButton,                   
+        new Button{
+          text = ">"
+          onAction = {e =>
+            viewBuilder.nextView()}
+        },                   
         new Button{
           text = "search"
         }
@@ -112,7 +113,7 @@ object CalendarAppGUI extends JFXApp3{
 
       left = dp
 
-      center <== months
+      center <== viewBuilder.calendar
     }
 
     val monthView = new Scene {

@@ -2,6 +2,12 @@ package CalendarApp
 
 import scala.collection.mutable.Buffer
 
+
+/** Class that represents a calendar loaded into the application. 
+  * 
+  *
+  * @param name name of the calendar
+  */
 class Calendar(var name: String):
 
   //constructor

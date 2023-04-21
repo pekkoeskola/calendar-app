@@ -1,5 +1,7 @@
-package calendarApp
+package CalendarApp
 package GUI
+
+import scala.collection.mutable.Buffer
 
 import scalafx.application.JFXApp3
 import scalafx.geometry.Insets
@@ -30,79 +32,100 @@ import scalafx.scene.layout.FlowPane
 import scalafx.scene.layout.Background
 import scalafx.scene.layout.BackgroundFill
 import scalafx.scene.layout.CornerRadii
+import scalafx.beans.property.BooleanProperty
+import scalafx.scene.layout.Pane
+import scalafx.scene.Node
 
 object CalendarAppGUI extends JFXApp3{
-
   def start(): Unit = {
+
+    val AppInstance = new CalendarApp
+
+    AppInstance.startUp()
+
+    val monthViewBuilder = MonthView(AppInstance)
+
+    val update = BooleanProperty(false)
+
+    val Button2 = new Button("Button2")
+
+    val months = ObjectProperty(monthViewBuilder.centerContent)
+
+    val leftButtons = new HBox{
+      children = Seq(
+        new Button{
+          text = "New Event"
+        },
+        new Text{
+          text = "Month here"
+        }
+      )
+    }
+
+    val rightButton = new Button{
+          text = ">"
+          onAction = {e =>
+            monthViewBuilder.update()
+            months() = monthViewBuilder.centerContent
+          }
+    }
+
+    val rightButtons = new HBox{
+      children = Seq(
+        new Button{
+          text = "change view"
+        },
+        new Button{
+          text = "<"
+        },
+        rightButton,                   
+        new Button{
+          text = "search"
+        }
+      )
+    }
+
+    val topToolBar = new GridPane{
+      val leftcol = new ColumnConstraints
+      leftcol.hgrow = Priority.Always
+      val rightcol = new ColumnConstraints
+      rightcol.hgrow = Priority.Never
+
+      val ins = Insets(4)
+      val ins0 = Insets(0)
+
+      val topFill = BackgroundFill(Color.Gray, CornerRadii.Empty,ins0)
+      val topBG = Background(Array(topFill))
+
+      background = topBG
+      add(leftButtons, 0, 0)
+      add(rightButtons, 1, 0)
+      columnConstraints = Seq(leftcol, rightcol)
+      padding = ins
+    }
+
+    val bp = new BorderPane{
+      val topButtons = topToolBar
+      val dp = new DatePicker
+
+      top = topButtons
+
+      left = dp
+
+      center <== months
+    }
+
+    val monthView = new Scene {
+      root = bp
+    }
 
     stage = new JFXApp3.PrimaryStage{
       title = "Calendar"
       width = 1200
       height = 600
 
-      var col = ObjectProperty(White)
-
-      scene = new Scene {
-
-        val dp = new DatePicker(LocalDate.now())
-
-        //button1.onMouseClicked = event => println(5+5)
-
-        val leftButtons = new HBox{
-          children = Seq(
-            new Button{
-              text = "New Event"
-            },
-            new Text{
-              text = "Month here"
-            }
-          )
-        }
-
-        val rightButtons = new HBox{
-          children = Seq(
-            new Button{
-              text = "change view"
-            },
-            new Button{
-              text = "<"
-            },
-            new Button{
-              text = ">"
-            },                    
-            new Button{
-              text = "search"
-            }
-          )
-        }
-
-        val leftcol = new ColumnConstraints
-        leftcol.hgrow = Priority.Always
-        val rightcol = new ColumnConstraints
-        rightcol.hgrow = Priority.Never
-
-        val ins = Insets(4)
-        val ins0 = Insets(0)
-
-        val topFill = BackgroundFill(Color.Gray, CornerRadii.Empty,ins0)
-        val topBG = Background(Array(topFill))
-
-        root = new BorderPane{
-          top = new GridPane{ //top toolbar
-            background = topBG
-            add(leftButtons, 0, 0)
-            add(rightButtons, 1, 0)
-            columnConstraints = Seq(leftcol, rightcol)
-            padding = ins
-          }
-          center = new FlowPane {
-            children = (1 to 5).toSeq.map(_ => scalafx.scene.shape.Rectangle(50, 50, Color.DarkGray))
-          }
-          left = new VBox {
-            children = (dp)
-          }
-        }
-      }
-    }
+      scene = monthView
+    } 
   }
 }
+

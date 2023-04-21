@@ -13,7 +13,7 @@ class CalendarApp:
 
   var dateCursor = LocalDate.now()
 
-  var currentView: CalendarView = WeekView(Week.getWeek(currentTime))
+  var currentView: CalendarView = MonthView(Month.getMonth(currentTime))
 
   var currentViewEvents = fetchEvents(currentView)
 

@@ -9,7 +9,13 @@ import scalafx.scene.layout.FlowPane
 import scalafx.beans.property.ObjectProperty
 import scalafx.scene.Node
 import scalafx.beans.property.StringProperty
+import scalafx.scene.control.Label
 
+/** Manages the calendar view part of the GUI
+  * 
+  *
+  * @param runningInstance the currently running instance of CalendarApp connected to the GUI
+  */
 class GUICalendarView(runningInstance: CalendarApp){
 
   val calendar = ObjectProperty(new VBox{
@@ -19,39 +25,52 @@ class GUICalendarView(runningInstance: CalendarApp){
     }
   )
 
-  val caption = new StringProperty(runningInstance.getView()._1.asInstanceOf[MonthView].month.monthNameWithYear)
+  val caption = new StringProperty(runningInstance.getView._1.interval.monthNameWithYear)
 
   def nextView() = 
     runningInstance.nextView()
-
-    calendar() = new VBox{
-      children = new FlowPane {
-        children = monthConstructor()
-      }
-    }
-    //TODO change this
-    caption() = runningInstance.getView()._1.asInstanceOf[MonthView].month.monthNameWithYear
+    update()
 
   def previousView() = 
     runningInstance.previousView()
+    update()
 
-    calendar() = new VBox{
-      children = new FlowPane {
-        children = monthConstructor()
-      }
-    }
-    //TODO change this
-    caption() = runningInstance.getView()._1.asInstanceOf[MonthView].month.monthNameWithYear
+  def changeViewType(newViewType: Int) = 
 
-  def changeViewType = ???
+    runningInstance.changeViewType(newViewType)
+    update()
+
+  def update() =
+
+    runningInstance.getView._1 match
+      case d: DayView =>
+        calendar() = new VBox{
+          children = new Label{
+            text = "day"
+          }
+        }
+      case w: WeekView =>
+        calendar() = new VBox{
+          children = new Label{
+            text = "day"
+          }
+        }
+      case m: MonthView =>
+        calendar() = new VBox{
+          children = new FlowPane {
+          children = monthConstructor()
+          }
+        }
+
+    caption() = runningInstance.getView._1.interval.monthNameWithYear
 
   private def monthConstructor(): Seq[VBox] =
     val vbox = Buffer[VBox]()
-    val days = runningInstance.getView()._1.interval.asInstanceOf[Month].daysInMonth
+    val days = runningInstance.getView._1.interval.asInstanceOf[Month].daysInMonth
     for i <- 1 to days do
       val day = new VBox{
-        minWidth = 100
-        minHeight = 100
+        minWidth = 120
+        minHeight = 120
         children = {new Text(s"${i}")}
       }
       vbox += day

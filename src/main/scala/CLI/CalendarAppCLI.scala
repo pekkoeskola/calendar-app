@@ -34,7 +34,7 @@ class CalendarAppCLI(val calendarApp: CalendarApp):
 
     println()
 
-    val q = calendarApp.getView()
+    val q = calendarApp.getView
 
     println(q(0))
     for i <- q(1) do

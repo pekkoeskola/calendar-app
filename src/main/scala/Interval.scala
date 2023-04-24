@@ -6,9 +6,14 @@ import java.time.format.DateTimeFormatter
 
 sealed abstract class Interval(val start: LocalDateTime, val end: LocalDateTime): 
 
+  private val _monthNameWithYear: String = start.format(DateTimeFormatter.ofPattern("MMMM YYYY"))
+
+  def monthNameWithYear: String = _monthNameWithYear
+
+  //TODO decide on date interval
   def contains(e: Event): Boolean = 
     
-    (e.startTime.isAfter(start) && e.startTime.isBefore(end)) || (e.endTime.isAfter(start) && e.endTime.isBefore(end))
+    (e.startTime.isAfter(start.minusSeconds(1)) && e.startTime.isBefore(end)) || (e.endTime.isAfter(start) && e.endTime.isBefore(end.plusSeconds(2)))
 
 class Day(start: LocalDateTime, end : LocalDateTime) extends Interval(start, end):
 
@@ -24,13 +29,15 @@ object Day:
 
     val s = beginningOfDay(t)
 
-    val e = s.plusDays(1)
+    //TODO decide on date interval
+    val e = s.plusDays(1).minusSeconds(1)
 
     Day(s,e)
 
   def beginningOfDay(t :LocalDateTime) =
 
     t.truncatedTo(ChronoUnit.DAYS)
+
 
 class Week(start: LocalDateTime, end : LocalDateTime) extends Interval(start, end):
 
@@ -46,23 +53,23 @@ object Week:
 
     val s = Day.beginningOfDay(t.`with`(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)))
 
-    val e = s.plusDays(7)
+    //TODO decide on date interval
+    val e = s.plusDays(7).minusSeconds(1)
 
     Week(s,e)
+
 
 class Month(start: LocalDateTime, end : LocalDateTime) extends Interval(start, end): 
 
   private val _daysInMonth = start.getMonth().length(Year.of(start.getYear()).isLeap())
 
-  private val _monthNameWithYear: String = start.format(DateTimeFormatter.ofPattern("MMMM YYYY"))
 
   def next: Month = Month(start.plusMonths(1), end.plusMonths(1))
 
   def previous: Month = Month(start.minusMonths(1), end.minusMonths(1))
 
-  def daysInMonth: Int = _daysInMonth
 
-  def monthNameWithYear: String = _monthNameWithYear
+  def daysInMonth: Int = _daysInMonth
 
   override def toString(): String = s"Month from $start to $end"  
 
@@ -72,7 +79,8 @@ object Month:
 
     val s = Day.beginningOfDay(t.`with`(TemporalAdjusters.firstDayOfMonth()))
 
-    val e = Day.beginningOfDay(t.`with`(TemporalAdjusters.lastDayOfMonth())).plusDays(1)
+    //TODO decide on date interval
+    val e = Day.beginningOfDay(t.`with`(TemporalAdjusters.lastDayOfMonth())).plusDays(1).minusSeconds(1)
 
     Month(s,e)
 

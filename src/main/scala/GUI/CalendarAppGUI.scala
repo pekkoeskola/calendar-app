@@ -3,6 +3,7 @@ package GUI
 
 import scala.collection.mutable.Buffer
 
+//scalafx imports
 import scalafx.Includes._
 import scalafx.application.JFXApp3
 import scalafx.geometry.Insets
@@ -47,6 +48,8 @@ object CalendarAppGUI extends JFXApp3{
     
     val AppInstance = new CalendarApp
 
+    val dialogs = new Dialogs
+
     AppInstance.startUp()
 
     val viewBuilder = GUICalendarView(AppInstance)
@@ -57,6 +60,12 @@ object CalendarAppGUI extends JFXApp3{
       children = Seq(
         new Button{
           text = "New Event"
+
+          onAction = e => {
+            val dialog = dialogs.createNewEventDialog
+
+            val result = dialog.showAndWait()
+          }
         },
         new Text{
           text <== viewBuilder.caption
@@ -66,6 +75,16 @@ object CalendarAppGUI extends JFXApp3{
 
     val viewChoices = ObservableBuffer("Day", "Week", "Month")
     val viewChoiceBox = new ChoiceBox(viewChoices)
+
+    viewChoiceBox.onAction = e => {
+
+      val chosen = viewChoiceBox.value()
+
+      chosen match
+        case "Day" => viewBuilder.changeViewType(CalendarView.DAYVIEW)
+        case "Week" => viewBuilder.changeViewType(CalendarView.WEEKVIEW)
+        case "Month" => viewBuilder.changeViewType(CalendarView.MONTHVIEW)
+    }
 
     val rightButtons = new HBox{
       children = Seq(
@@ -123,7 +142,7 @@ object CalendarAppGUI extends JFXApp3{
     stage = new JFXApp3.PrimaryStage{
       title = "Calendar"
       width = 1200
-      height = 600
+      height = 800
 
       scene = monthView
     } 

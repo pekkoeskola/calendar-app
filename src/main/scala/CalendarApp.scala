@@ -9,6 +9,8 @@ import java.time.{LocalDate, LocalDateTime}
 /**This class defines a running instance of CalendarApp. It acts as an API for connecting 
  * the core logic of the App to a UI; UI's communicate with the core logic primarily through 
  * this class and exclusively to modify data.
+ * 
+ * It is mutable through it's methods and essentially stores the state of the currently running CalendarApp.
   */
 class CalendarApp:
 
@@ -17,11 +19,14 @@ class CalendarApp:
 
   private val calendars = Buffer[Calendar]()
 
-  private var dateCursor = LocalDate.now()
+  private var _dateCursor = LocalDateTime.now()
 
   private var currentView: CalendarView = MonthView(Month.getMonth(currentTime))
 
   private var currentViewEvents = fetchEvents(currentView)
+
+  def dateCursor = _dateCursor
+
 
   //stub
   def startUp() =
@@ -35,28 +40,37 @@ class CalendarApp:
     currentViewEvents = fetchEvents(currentView)
 
 
-  def addCalendar(calendar: Calendar) = calendars += calendar
+  def addCalendar(calendar: Calendar) = 
+    calendars += calendar
+    fetchEvents(currentView)
 
 
-  def addEvent(calendar: Calendar, event: Event) = calendar.addEvent(event) 
+  def addEvent(calendar: Calendar, event: Event) = 
+    calendar.addEvent(event)
+    fetchEvents(currentView)
 
-  def deleteEvent(calendar: Calendar, event: Event) = calendar.deleteEvent(event)
+  def deleteEvent(calendar: Calendar, event: Event) = 
+    calendar.deleteEvent(event)
+    fetchEvents(currentView)
 
 
-  def changeViewType(i: Int) =
-    currentView = CalendarView.changeViewType(dateCursor.atStartOfDay(), i)
+  def changeViewType(i: Int) = //TODO
+    currentView = CalendarView.changeViewType(dateCursor, i)
     currentViewEvents = fetchEvents(currentView)
 
   def nextView() = 
     currentView = currentView.next
+    _dateCursor = currentView.interval.start
     currentViewEvents = fetchEvents(currentView)
 
   def previousView() = 
     currentView = currentView.previous
+    _dateCursor = currentView.interval.start
     currentViewEvents = fetchEvents(currentView)
 
 
-  def getView(): (CalendarView, Vector[Event]) = (currentView, currentViewEvents)
+  def getView: (CalendarView, Vector[Event]) = (currentView, currentViewEvents)
+
 
   private def fetchEvents(v :CalendarView): Vector[Event] = 
 

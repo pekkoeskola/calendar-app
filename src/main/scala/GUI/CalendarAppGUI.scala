@@ -40,6 +40,8 @@ import scalafx.scene.Node
 import scalafx.scene.control.ChoiceBox
 import scalafx.collections.ObservableBuffer
 import scalafx.beans.property.StringProperty
+import scalafx.scene.control.Alert
+import scalafx.scene.control.Alert.AlertType
 
 object CalendarAppGUI extends JFXApp3{
   def start(): Unit = {
@@ -61,10 +63,36 @@ object CalendarAppGUI extends JFXApp3{
         new Button{
           text = "New Event"
 
-          onAction = e => {
-            val dialog = dialogs.createNewEventDialog
+          onAction = handle{
+            var failed = true
+            while failed do
+              val dialog = dialogs.createNewEventDialog
 
-            val result = dialog.showAndWait()
+              val result = dialog.showAndWait()
+
+              result match
+                case Some(res: NewEventDialogResult) =>
+                  res match
+                    case NewEventDialogResult(true, Some(e), None) =>
+                      //stub
+                      failed = false
+                    case NewEventDialogResult(false, None, Some(d)) =>
+                      failed = true
+                      new Alert(AlertType.Error) {
+                        initOwner(stage)
+                        title = "Error Dialog"
+                        headerText = "Error during event creation"
+                        contentText = d
+                      }.showAndWait()
+                    case _ =>
+                  end match
+
+                case _ => 
+                  println("cancelled")
+                  failed = false
+              end match
+              
+            end while
           }
         },
         new Text{
@@ -75,6 +103,7 @@ object CalendarAppGUI extends JFXApp3{
 
     val viewChoices = ObservableBuffer("Day", "Week", "Month")
     val viewChoiceBox = new ChoiceBox(viewChoices)
+    viewChoiceBox.value = "Month"
 
     viewChoiceBox.onAction = e => {
 
@@ -127,6 +156,12 @@ object CalendarAppGUI extends JFXApp3{
     val bp = new BorderPane{
       val topButtons = topToolBar
       val dp = new DatePicker
+
+      dp.value.onChange {
+        (_,_,n) => {
+          viewBuilder.goto(n)
+        }
+      }
 
       top = topButtons
 

@@ -10,6 +10,7 @@ import scalafx.beans.property.ObjectProperty
 import scalafx.scene.Node
 import scalafx.beans.property.StringProperty
 import scalafx.scene.control.Label
+import java.time.LocalDate
 
 /** Manages the calendar view part of the GUI
   * 
@@ -40,6 +41,12 @@ class GUICalendarView(runningInstance: CalendarApp){
     runningInstance.changeViewType(newViewType)
     update()
 
+  def goto(d: LocalDate) =
+
+    runningInstance.goToDate(d.atStartOfDay())
+
+    update()
+
   def update() =
 
     runningInstance.getView._1 match
@@ -52,7 +59,7 @@ class GUICalendarView(runningInstance: CalendarApp){
       case w: WeekView =>
         calendar() = new VBox{
           children = new Label{
-            text = "day"
+            text = "Week"
           }
         }
       case m: MonthView =>

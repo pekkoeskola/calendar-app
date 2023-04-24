@@ -14,10 +14,10 @@ import java.time.{LocalDate, LocalDateTime}
   */
 class CalendarApp:
 
-  //may need updating
   private var currentTime = LocalDateTime.now()
 
-  private val calendars = Buffer[Calendar]()
+  //designate as private eventually
+  val calendars = Buffer[Calendar]()
 
   private var _dateCursor = LocalDateTime.now()
 
@@ -68,6 +68,14 @@ class CalendarApp:
     _dateCursor = currentView.interval.start
     currentViewEvents = fetchEvents(currentView)
 
+  def goToDate(date: LocalDateTime) = 
+
+    currentView = currentView match
+      case d: DayView => DayView(Day.getDay(date)) 
+      case w: WeekView => WeekView(Week.getWeek(date))
+      case m: MonthView => MonthView(Month.getMonth(date))
+
+    _dateCursor = currentView.interval.start
 
   def getView: (CalendarView, Vector[Event]) = (currentView, currentViewEvents)
 

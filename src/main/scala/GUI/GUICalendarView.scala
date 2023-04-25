@@ -65,11 +65,13 @@ class GUICalendarView(runningInstance: CalendarApp){
       case m: MonthView =>
         calendar() = new VBox{
           children = new FlowPane {
-          children = monthConstructor()
+            children = monthConstructor()
           }
         }
 
     caption() = runningInstance.getView._1.interval.monthNameWithYear
+
+  private def dayConstructor() = ???
 
   private def monthConstructor(): Seq[VBox] =
     val vbox = Buffer[VBox]()

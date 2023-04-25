@@ -50,7 +50,7 @@ object CalendarAppGUI extends JFXApp3{
     
     val AppInstance = new CalendarApp
 
-    val dialogs = new Dialogs
+    val dialogs = new Dialogs(AppInstance)
 
     AppInstance.startUp()
 
@@ -73,10 +73,11 @@ object CalendarAppGUI extends JFXApp3{
               result match
                 case Some(res: NewEventDialogResult) =>
                   res match
-                    case NewEventDialogResult(true, Some(e), None) =>
-                      //stub
+                    case NewEventDialogResult(true, Some(c),Some(e), None) =>
+                      AppInstance.addEvent(AppInstance.findCalendar(c), e)
+                      viewBuilder.update()
                       failed = false
-                    case NewEventDialogResult(false, None, Some(d)) =>
+                    case NewEventDialogResult(false, None, None, Some(d)) =>
                       failed = true
                       new Alert(AlertType.Error) {
                         initOwner(stage)

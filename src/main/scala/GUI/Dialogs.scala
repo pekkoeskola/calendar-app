@@ -22,9 +22,9 @@ import scalafx.collections.ObservableBuffer
 import scalafx.beans.property.BooleanProperty
 
 
-case class NewEventDialogResult(success: Boolean, event: Option[Event], errorMsg: Option[String])
+case class NewEventDialogResult(success: Boolean, calendarName: Option[String], event: Option[Event], errorMsg: Option[String])
 
-class Dialogs:
+class Dialogs(runningInstance: CalendarApp):
 
   def createNewEventDialog: Dialog[NewEventDialogResult] = 
 
@@ -44,6 +44,8 @@ class Dialogs:
     nameField.text.onChange { (_, _, newValue) =>
       createEventButton.disable = newValue.trim().isEmpty
     }
+    val locationField = new TextField
+    val participantsField = new TextField
 
     val dp1 = new DatePicker(LocalDate.now())
 
@@ -92,21 +94,33 @@ class Dialogs:
       )
     }
 
-    val startEndCheck = new BooleanProperty
+    val calendarNames = runningInstance.calendars.map(_.name).toVector
+    val calendarChoices = ObservableBuffer[String]()
+    calendarChoices.addAll(calendarNames)
+    val calendarChoiceBox = new ChoiceBox(calendarChoices)
+    calendarChoiceBox.value() = calendarNames(0)
 
     val grid = new GridPane() {
       hgap = 10
       vgap = 10
       padding = Insets(20, 100, 10, 10)
 
-      add(new Label("Name:"), 0, 0)
-      add(nameField, 1, 0)
-      add(new Label("Start:"), 0, 1)
-      add(dp1, 1, 1)
-      add(startTime, 3, 1)
-      add(new Label("End:"), 0, 2)
-      add(dp2, 1, 2)
-      add(endTime, 3, 2)
+      add(new Label("Calendar:"), 0, 0)
+      add(calendarChoiceBox, 1, 0)
+
+      add(new Label("Name:"), 0, 1)
+      add(nameField, 1, 1)
+
+      add(new Label("Start:"), 0, 2)
+      add(dp1, 1, 2)
+      add(startTime, 2, 2)
+
+      add(new Label("End:"), 0, 3)
+      add(dp2, 1, 3)
+      add(endTime, 2, 3)
+
+      add(new Label("Location:"), 0, 4)
+      add(locationField, 1, 4)
     }
 
     dialog.resultConverter = dialogButton =>
@@ -117,9 +131,10 @@ class Dialogs:
         val e = dp2.value().atStartOfDay().plusHours(ehours.value().toInt).plusMinutes(emins1.value().toInt*10).plusMinutes(emins2.value().toInt)
 
         if s.isBefore(e) then
-          NewEventDialogResult(true, Some(Event(nameField.text(), s, e, None, None)), None) 
+          //finish this!!
+          NewEventDialogResult(true, Some(calendarChoiceBox.value()),Some(Event(nameField.text(), s, e, Option(locationField.text()).filter(_.trim.nonEmpty), None, None, None)), None) 
         else
-          NewEventDialogResult(false, None, Some("Event end was before start"))
+          NewEventDialogResult(false, None, None, Some("Event end was before start"))
       else
         null
 

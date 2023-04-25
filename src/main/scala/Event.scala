@@ -6,7 +6,9 @@ class Event(
   var name: String, 
   var startTime: LocalDateTime, 
   var endTime: LocalDateTime, 
-  var Location: Option[String] = None,
-  var eventCategory: Option[EventCategory] = None):
+  var location: Option[String] = None,
+  var participants: Option[String] = None,
+  var eventCategory: Option[EventCategory] = None,
+  var reminder: Option[Reminder] = None):
 
   override def toString = s"Event \"$name\" at $startTime till $endTime"

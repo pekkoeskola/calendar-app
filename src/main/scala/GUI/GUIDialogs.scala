@@ -22,9 +22,11 @@ import scalafx.collections.ObservableBuffer
 import scalafx.beans.property.BooleanProperty
 
 
-case class NewEventDialogResult(success: Boolean, calendarName: Option[String], event: Option[Event], errorMsg: Option[String])
+case class NewEventDialogResult(success: Boolean, event: Option[Event], errorMsg: Option[String])
 
-class Dialogs(runningInstance: CalendarApp):
+case class ModifyorDeleteEventDialogResult(success: Boolean, isDelete: Boolean, event: Option[Event], originalEvent: Option[Event], errorMsg: Option[String])
+
+class GUIDialogs(runningInstance: CalendarApp):
 
   def createNewEventDialog: Dialog[NewEventDialogResult] = 
 
@@ -130,11 +132,24 @@ class Dialogs(runningInstance: CalendarApp):
 
         val e = dp2.value().atStartOfDay().plusHours(ehours.value().toInt).plusMinutes(emins1.value().toInt*10).plusMinutes(emins2.value().toInt)
 
+        //gathers all the info to craft a new event object
+        def buildEvent: Event = 
+
+          val name = nameField.text()
+          val cal: Calendar = runningInstance.findCalendar(calendarChoiceBox.value())
+          val start = s
+          val end = e
+          val location = Option(locationField.text()).filter(_.trim.nonEmpty)
+
+          Event(name, cal, start, end, location, None, None, None)
+        
+        end buildEvent
+
         if s.isBefore(e) then
           //finish this!!
-          NewEventDialogResult(true, Some(calendarChoiceBox.value()),Some(Event(nameField.text(), s, e, Option(locationField.text()).filter(_.trim.nonEmpty), None, None, None)), None) 
+          NewEventDialogResult(true, Some(buildEvent), None) 
         else
-          NewEventDialogResult(false, None, None, Some("Event end was before start"))
+          NewEventDialogResult(false, None, Some("Event end was before start"))
       else
         null
 
@@ -144,44 +159,54 @@ class Dialogs(runningInstance: CalendarApp):
 
   end createNewEventDialog
 
-  def modifyorDeleteEventDialog: Dialog[NewEventDialogResult] = 
+  def modifyorDeleteEventDialog(eventToModify: Event): Dialog[ModifyorDeleteEventDialogResult] = 
 
-    val dialog = new Dialog[NewEventDialogResult](){
+    val dialog = new Dialog[ModifyorDeleteEventDialogResult](){
       //initOwner(stage)
-      title = "Create Event"
-      headerText = "Create Event Here"
+      title = "Modify Event"
+      headerText = "Modifying event"
     }
 
-    val createEventButtonType = new ButtonType("Create Event", ButtonData.OKDone)
-    dialog.dialogPane().buttonTypes = Seq(createEventButtonType, ButtonType.Cancel)
-    val createEventButton = dialog.dialogPane().lookupButton(createEventButtonType)
+    val saveEventButtonType = new ButtonType("Save", ButtonData.OKDone)
+    val deleteEventButtonType = new ButtonType("Delete Event", ButtonData.Other)
 
-    createEventButton.disable = true
+    dialog.dialogPane().buttonTypes = Seq(saveEventButtonType, deleteEventButtonType, ButtonType.Cancel)
+    val createEventButton = dialog.dialogPane().lookupButton(saveEventButtonType)
 
-    val nameField = new TextField
+    createEventButton.disable = false
+    val nameField = new TextField{
+      text = eventToModify.name
+    }
     nameField.text.onChange { (_, _, newValue) =>
       createEventButton.disable = newValue.trim().isEmpty
     }
-    val locationField = new TextField
-    val participantsField = new TextField
+    val locationField = new TextField{
+      text = eventToModify.location.getOrElse("")
+    }
+    val participantsField = new TextField{
+      text = eventToModify.location.getOrElse("")
+    }
 
-    val dp1 = new DatePicker(LocalDate.now())
+    val dp1 = new DatePicker(eventToModify.startTime.toLocalDate())
 
-    val dp2 = new DatePicker(LocalDate.now())
+    val dp2 = new DatePicker(eventToModify.endTime.toLocalDate())
 
     val hchoices = ObservableBuffer("00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","22","23","24")
 
     val m1choices = ObservableBuffer("0","1","2","3","4","5")
     val m2choices = ObservableBuffer("0","1","2","3","4","5","6","7","8","9")
 
+    val smins = eventToModify.startTime.getMinute()
+    val emins = eventToModify.endTime.getMinute()
+
     val shours = new ChoiceBox(hchoices){
-      value = "00"
+      value = if eventToModify.startTime.getHour() < 10 then "0" + eventToModify.startTime.getHour().toString() else eventToModify.startTime.getHour().toString()
     }
     val smins1 = new ChoiceBox(m1choices){
-      value = "0"
+      value = if smins < 10 then 0.toString() else smins.toString()(0).toString()
     }
     val smins2 = new ChoiceBox(m2choices){
-      value = "0"
+      value = if smins < 10 then smins.toString()(0).toString() else smins.toString()(1).toString()
     }
 
     val startTime = new HBox{
@@ -194,13 +219,13 @@ class Dialogs(runningInstance: CalendarApp):
     }
 
     val ehours = new ChoiceBox(hchoices){
-      value = "00"
+      value = eventToModify.endTime.getHour().toString()
     }
     val emins1 = new ChoiceBox(m1choices){
-      value = "0"
+      value = if emins < 10 then 0.toString() else smins.toString()(0).toString()
     }
     val emins2 = new ChoiceBox(m2choices){
-      value = "0"
+      value = if emins < 10 then smins.toString()(0).toString() else smins.toString()(1).toString()
     }
 
     val endTime = new HBox{
@@ -242,17 +267,32 @@ class Dialogs(runningInstance: CalendarApp):
     }
 
     dialog.resultConverter = dialogButton =>
-      if (dialogButton == createEventButtonType)
+      if (dialogButton == saveEventButtonType) then
 
         val s = dp1.value().atStartOfDay().plusHours(shours.value().toInt).plusMinutes(smins1.value().toInt*10).plusMinutes(smins2.value().toInt)
 
         val e = dp2.value().atStartOfDay().plusHours(ehours.value().toInt).plusMinutes(emins1.value().toInt*10).plusMinutes(emins2.value().toInt)
 
+        //gathers all the info to craft a new event object
+        def buildEvent: Event = 
+
+          val name = nameField.text()
+          val cal: Calendar = runningInstance.findCalendar(calendarChoiceBox.value())
+          val start = s
+          val end = e
+          val location = Option(locationField.text()).filter(_.trim.nonEmpty)
+
+          Event(name, cal, start, end, location, None, None, None)
+        
+        end buildEvent
+
         if s.isBefore(e) then
           //finish this!!
-          NewEventDialogResult(true, Some(calendarChoiceBox.value()),Some(Event(nameField.text(), s, e, Option(locationField.text()).filter(_.trim.nonEmpty), None, None, None)), None) 
+          ModifyorDeleteEventDialogResult(true, false, Some(buildEvent), Some(eventToModify),None) 
         else
-          NewEventDialogResult(false, None, None, Some("Event end was before start"))
+          ModifyorDeleteEventDialogResult(false, false, None, None, Some("Event end was before start"))
+      else if (dialogButton == deleteEventButtonType) then
+        ModifyorDeleteEventDialogResult(true, true, None, Some(eventToModify), None)
       else
         null
 

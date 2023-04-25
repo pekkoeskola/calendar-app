@@ -20,6 +20,8 @@ import scalafx.scene.control.ScrollPane
 import scalafx.scene.layout.GridPane
 import scalafx.scene.layout.Priority
 import scalafx.scene.layout.ColumnConstraints
+import scalafx.scene.control.Alert
+import scalafx.scene.control.Alert.AlertType
 
 
 /** Manages the calendar view part of the GUI
@@ -27,11 +29,14 @@ import scalafx.scene.layout.ColumnConstraints
   *
   * @param runningInstance the currently running instance of CalendarApp connected to the GUI
   */
-class GUICalendarView(runningInstance: CalendarApp){
+class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
 
   val calendar = ObjectProperty(new VBox)
 
   val caption = new StringProperty(runningInstance.getView._1.interval.monthNameWithYear)
+
+  def initialise() =
+    update()
 
   def nextView() = 
     runningInstance.nextView()
@@ -42,7 +47,6 @@ class GUICalendarView(runningInstance: CalendarApp){
     update()
 
   def changeViewType(newViewType: Int) = 
-
     runningInstance.changeViewType(newViewType)
     update()
 
@@ -135,7 +139,42 @@ class GUICalendarView(runningInstance: CalendarApp){
           maxWidth = Double.MaxValue
           hgrow = Priority.Always
 
-          onMouseClicked = e => println(x)
+          onMouseClicked = handle{
+            var failed = true
+            while failed do
+              val dialog = dialogs.modifyorDeleteEventDialog(x)
+
+              val result = dialog.showAndWait()
+
+              result match
+                case Some(res: ModifyorDeleteEventDialogResult) =>
+                  res match
+                    case ModifyorDeleteEventDialogResult(true, false, Some(e), Some(ogEvent), None) =>
+                      runningInstance.addEvent(e)
+                      update()
+                      failed = false
+                    case ModifyorDeleteEventDialogResult(false, false, None, None,Some(d)) =>
+                      failed = true
+                      new Alert(AlertType.Error) {
+                        title = "Error Dialog"
+                        headerText = "Error during event creation"
+                        contentText = d
+                      }.showAndWait()
+                    case ModifyorDeleteEventDialogResult(true, true, None, Some(ogEvent), None) => 
+                      runningInstance.deleteEvent(ogEvent)
+                      println("deleted")
+                      failed = false
+                    case _ =>
+                  end match
+
+                case _ => 
+                  failed = false
+              end match
+              
+            end while
+            update()
+            println("updated")
+          }
         }))
         g.add(rowEvents, 1, rowCounter)
       else

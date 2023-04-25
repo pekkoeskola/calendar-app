@@ -49,15 +49,19 @@ object CalendarAppGUI extends JFXApp3{
 
     //initialisation
     
-    val AppInstance = new CalendarApp
+    val currentAppInstance = new CalendarApp
 
-    val dialogs = new Dialogs(AppInstance)
+    val dialogs = new GUIDialogs(currentAppInstance)
 
-    AppInstance.startUp()
+    currentAppInstance.startUp()
 
-    val viewBuilder = GUICalendarView(AppInstance)
+    val calendarView = GUICalendarView(currentAppInstance, dialogs)
 
-    viewBuilder.update()
+    calendarView.initialise()
+
+    val leftContent = GUILeftContent(currentAppInstance, calendarView, dialogs)
+
+    leftContent.initialise()
 
     //build GUI
 
@@ -78,11 +82,11 @@ object CalendarAppGUI extends JFXApp3{
               result match
                 case Some(res: NewEventDialogResult) =>
                   res match
-                    case NewEventDialogResult(true, Some(c),Some(e), None) =>
-                      AppInstance.addEvent(AppInstance.findCalendar(c), e)
-                      viewBuilder.update()
+                    case NewEventDialogResult(true,Some(e), None) =>
+                      currentAppInstance.addEvent(e)
+                      calendarView.update()
                       failed = false
-                    case NewEventDialogResult(false, None, None, Some(d)) =>
+                    case NewEventDialogResult(false, None, Some(d)) =>
                       failed = true
                       new Alert(AlertType.Error) {
                         initOwner(stage)
@@ -102,7 +106,7 @@ object CalendarAppGUI extends JFXApp3{
           }
         },
         new Text{
-          text <== viewBuilder.caption
+          text <== calendarView.caption
         }
       )
     }
@@ -116,9 +120,9 @@ object CalendarAppGUI extends JFXApp3{
       val chosen = viewChoiceBox.value()
 
       chosen match
-        case "Day" => viewBuilder.changeViewType(CalendarView.DAYVIEW)
-        case "Week" => viewBuilder.changeViewType(CalendarView.WEEKVIEW)
-        case "Month" => viewBuilder.changeViewType(CalendarView.MONTHVIEW)
+        case "Day" => calendarView.changeViewType(CalendarView.DAYVIEW)
+        case "Week" => calendarView.changeViewType(CalendarView.WEEKVIEW)
+        case "Month" => calendarView.changeViewType(CalendarView.MONTHVIEW)
     }
 
     val rightButtons = new HBox{
@@ -127,12 +131,12 @@ object CalendarAppGUI extends JFXApp3{
         new Button{
           text = "<"
           onAction = {e =>
-            viewBuilder.previousView()}
+            calendarView.previousView()}
         },
         new Button{
           text = ">"
           onAction = {e =>
-            viewBuilder.nextView()}
+            calendarView.nextView()}
         },                   
         new Button{
           text = "search"
@@ -159,41 +163,16 @@ object CalendarAppGUI extends JFXApp3{
       padding = ins
     }
 
-    //build calendartogglelist
-
-    val calendars = ObservableBuffer[Calendar]()
-    AppInstance.calendars.foreach(x => calendars.add(x))
-    val calendarToggles = calendars.map(c => new HBox{children = new CheckBox(c.name){
-        selected = true
-        onAction = {e =>
-          AppInstance.toggleCalendarFilter(c)
-          viewBuilder.update()}
-      }})
-
-    //attach everything to BorderPane which forms the basis of the GUI
+    //attach everything to BorderPane which is the main fram of the GUI
 
     val bp = new BorderPane{
       val topButtons = topToolBar
 
-      val dp = new DatePicker
-      dp.value.onChange {
-        (_,_,n) => {
-          viewBuilder.goto(n)
-        }
-      }
-
-      val leftContent = new VBox{
-        children = Seq(new HBox{children = dp})
-      }
-      calendarToggles.foreach(ct => leftContent.getChildren().add(ct))
-
-      leftContent.getChildren().add(new Button("sup")) 
-
       top = topButtons
 
-      left = leftContent
+      left <== leftContent.content
 
-      center <== viewBuilder.calendar
+      center <== calendarView.calendar
     }
 
     val monthView = new Scene {

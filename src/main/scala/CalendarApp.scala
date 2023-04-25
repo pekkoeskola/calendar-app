@@ -17,7 +17,9 @@ class CalendarApp:
   private var currentTime = LocalDateTime.now()
 
   //designate as private eventually
-  val calendars = Buffer[Calendar]()
+  private val _calendars = Buffer[Calendar]()
+
+  private val _eventCategories = Buffer[EventCategory]()
 
   private val calendarFilters = Buffer[Calendar]()
 
@@ -31,50 +33,76 @@ class CalendarApp:
 
   def dateCursor = _dateCursor
 
+  def calendars = _calendars
+
+  def eventCategories = _eventCategories
+
 
   //stub
   def startUp() =
 
     currentTime = LocalDateTime.now()
 
-    this.addCalendar(Calendar("test", Buffer(Event("event1", LocalDateTime.now(), LocalDateTime.now().plusHours(1)))))
+    this.addCalendar(Calendar("test"))
 
-    this.addEvent(calendars(0), Event("Event2", LocalDateTime.now().plusWeeks(1), LocalDateTime.now().plusWeeks(1)))
+    this.addEvent(Event("event1", calendars(0), LocalDateTime.now(), LocalDateTime.now().plusHours(2)))
 
-    this.addEvent(calendars(0), Event("event3", LocalDateTime.now(), LocalDateTime.now().plusHours(1)))
+    this.addEvent(Event("Event2", calendars(0), LocalDateTime.now().plusWeeks(1), LocalDateTime.now().plusWeeks(1)))
+
+    this.addEvent(Event("event3", calendars(0), LocalDateTime.now(), LocalDateTime.now().plusHours(1)))
+
+    _eventCategories += EventCategory("category1", Buffer[EventCategory]())
 
     currentViewEvents = fetchEvents()
 
 
+  private def fetchEvents(): Vector[Event] = 
+
+    val retevents = Buffer[Event]()
+
+    for c <- (calendars.diff(calendarFilters))
+      e <- c.events if currentView.interval.contains(e) && !eventCategoryFilters.contains(e.eventCategory) 
+    do retevents += e
+
+    retevents.toVector
+
+  /** Updates the currentViewEvents variable of this class with the events contained by the currently active calendarView.
+  * Takes into account the currently applicable calendarFilters and eventCategoryFilters. (Uses fetchEvents as a helper
+  * function for this)
+  */
+  private def update() = 
+    
+    currentViewEvents = fetchEvents()
+
   def addCalendar(calendar: Calendar) = 
     calendars += calendar
-    fetchEvents()
+    update()
 
 
-  def addEvent(calendar: Calendar, event: Event) = 
-    calendar.addEvent(event)
-    fetchEvents()
+  def addEvent(event: Event) = 
+    event.calendar.addEvent(event)
+    update()
 
   def modifyEvent(event: Event) = ???
 
-  def deleteEvent(calendar: Calendar, event: Event) = 
-    calendar.deleteEvent(event)
-    fetchEvents()
+  def deleteEvent(event: Event) = 
+    event.calendar.deleteEvent(event)
+    update()
 
 
   def changeViewType(i: Int) = //TODO
     currentView = CalendarView.changeViewType(dateCursor, i)
-    currentViewEvents = fetchEvents()
+    update()
 
   def nextView() = 
     currentView = currentView.next
     _dateCursor = currentView.interval.start
-    currentViewEvents = fetchEvents()
+    update()
 
   def previousView() = 
     currentView = currentView.previous
     _dateCursor = currentView.interval.start
-    currentViewEvents = fetchEvents()
+    update()
 
   def goToDate(date: LocalDateTime) = 
 
@@ -94,28 +122,19 @@ class CalendarApp:
     else
       calendarFilters -= calendar
 
-    currentViewEvents = fetchEvents()
+    update()
 
-  def addEventCategoryFilter() = ???
+  def toggleEventCategoryFilter(eventCategory: EventCategory) = 
+    if !eventCategoryFilters.contains(eventCategory) then
+      eventCategoryFilters += eventCategory
+    else
+      eventCategoryFilters -= eventCategory
+
+    update()
 
   
   def findCalendar(calendarName: String): Calendar = 
     
     calendars.find(_.name == calendarName).getOrElse(throw CantFindException("can't find calendar with given name"))
-
-  /** Updates the currentViewEvents variable of this class with the events contained by the currently active calendarView.
-    * Takes into account the currently applicable calendarFilters and eventCategoryFilters.
-    *
-    * @return a Vector containing the events
-    */
-  private def fetchEvents(): Vector[Event] = 
-
-    val retevents = Buffer[Event]()
-
-    for c <- (calendars.diff(calendarFilters))
-      e <- c.events if currentView.interval.contains(e) && !eventCategoryFilters.contains(e.eventCategory) 
-    do retevents += e
-
-    retevents.toVector
 
   

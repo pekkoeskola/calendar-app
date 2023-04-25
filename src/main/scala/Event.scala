@@ -3,7 +3,8 @@ package CalendarApp
 import java.time.LocalDateTime
 
 class Event(
-  var name: String, 
+  var name: String,
+  var calendar: Calendar, 
   var startTime: LocalDateTime, 
   var endTime: LocalDateTime, 
   var location: Option[String] = None,

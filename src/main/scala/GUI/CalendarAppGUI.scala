@@ -42,6 +42,7 @@ import scalafx.collections.ObservableBuffer
 import scalafx.beans.property.StringProperty
 import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.control.CheckBox
 
 object CalendarAppGUI extends JFXApp3{
   def start(): Unit = {
@@ -56,7 +57,11 @@ object CalendarAppGUI extends JFXApp3{
 
     val viewBuilder = GUICalendarView(AppInstance)
 
-    //build ui
+    viewBuilder.update()
+
+    //build GUI
+
+    //build top toolbar
 
     val leftButtons = new HBox{
       children = Seq(
@@ -154,19 +159,39 @@ object CalendarAppGUI extends JFXApp3{
       padding = ins
     }
 
+    //build calendartogglelist
+
+    val calendars = ObservableBuffer[Calendar]()
+    AppInstance.calendars.foreach(x => calendars.add(x))
+    val calendarToggles = calendars.map(c => new HBox{children = new CheckBox(c.name){
+        selected = true
+        onAction = {e =>
+          AppInstance.toggleCalendarFilter(c)
+          viewBuilder.update()}
+      }})
+
+    //attach everything to BorderPane which forms the basis of the GUI
+
     val bp = new BorderPane{
       val topButtons = topToolBar
-      val dp = new DatePicker
 
+      val dp = new DatePicker
       dp.value.onChange {
         (_,_,n) => {
           viewBuilder.goto(n)
         }
       }
 
+      val leftContent = new VBox{
+        children = Seq(new HBox{children = dp})
+      }
+      calendarToggles.foreach(ct => leftContent.getChildren().add(ct))
+
+      leftContent.getChildren().add(new Button("sup")) 
+
       top = topButtons
 
-      left = dp
+      left = leftContent
 
       center <== viewBuilder.calendar
     }

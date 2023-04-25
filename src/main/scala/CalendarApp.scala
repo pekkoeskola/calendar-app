@@ -41,6 +41,8 @@ class CalendarApp:
 
     this.addEvent(calendars(0), Event("Event2", LocalDateTime.now().plusWeeks(1), LocalDateTime.now().plusWeeks(1)))
 
+    this.addEvent(calendars(0), Event("event3", LocalDateTime.now(), LocalDateTime.now().plusHours(1)))
+
     currentViewEvents = fetchEvents()
 
 
@@ -52,6 +54,8 @@ class CalendarApp:
   def addEvent(calendar: Calendar, event: Event) = 
     calendar.addEvent(event)
     fetchEvents()
+
+  def modifyEvent(event: Event) = ???
 
   def deleteEvent(calendar: Calendar, event: Event) = 
     calendar.deleteEvent(event)
@@ -84,7 +88,13 @@ class CalendarApp:
   def getView: (CalendarView, Vector[Event]) = (currentView, currentViewEvents)
 
 
-  def addCalendarFilter(calendar: Calendar) = ???
+  def toggleCalendarFilter(calendar: Calendar) = 
+    if !calendarFilters.contains(calendar) then
+      calendarFilters += calendar
+    else
+      calendarFilters -= calendar
+
+    currentViewEvents = fetchEvents()
 
   def addEventCategoryFilter() = ???
 

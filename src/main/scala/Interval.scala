@@ -13,13 +13,23 @@ sealed abstract class Interval(val start: LocalDateTime, val end: LocalDateTime)
   //TODO decide on date interval
   def contains(e: Event): Boolean = 
     
-    (e.startTime.isAfter(start.minusSeconds(1)) && e.startTime.isBefore(end)) || (e.endTime.isAfter(start) && e.endTime.isBefore(end.plusSeconds(2)))
+    //review this
+    (e.startTime.isAfter(start.minusSeconds(1)) && e.startTime.isBefore(end)) 
+    || (e.endTime.isAfter(start) && e.endTime.isBefore(end.plusSeconds(2)) 
+    || ((e.startTime.isBefore(start)) && e.endTime.isAfter(end)))
+
+class AnyInterval(start: LocalDateTime, end : LocalDateTime) extends Interval(start, end)
 
 class Day(start: LocalDateTime, end : LocalDateTime) extends Interval(start, end):
+
+  private val _dayOfWeekandDate: String = start.format(DateTimeFormatter.ofPattern("EEEE dd"))
 
   def next = Day(start.plusDays(1), end.plusDays(1))
 
   def previous = Day(start.minusDays(1), end.minusDays(1))
+
+
+  def dayOfWeekandDate: String = _dayOfWeekandDate
 
   override def toString(): String = s"Day from $start to $end"
 

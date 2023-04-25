@@ -1,6 +1,10 @@
 package CalendarApp
 package GUI
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+
+//scalafx imports
 import scalafx.Includes._
 import scalafx.scene.layout.VBox
 import scala.collection.mutable.Buffer
@@ -10,7 +14,13 @@ import scalafx.beans.property.ObjectProperty
 import scalafx.scene.Node
 import scalafx.beans.property.StringProperty
 import scalafx.scene.control.Label
-import java.time.LocalDate
+import scalafx.scene.layout.HBox
+import scalafx.collections.ObservableBuffer
+import scalafx.scene.control.ScrollPane
+import scalafx.scene.layout.GridPane
+import scalafx.scene.layout.Priority
+import scalafx.scene.layout.ColumnConstraints
+
 
 /** Manages the calendar view part of the GUI
   * 
@@ -19,12 +29,7 @@ import java.time.LocalDate
   */
 class GUICalendarView(runningInstance: CalendarApp){
 
-  val calendar = ObjectProperty(new VBox{
-      children = new FlowPane {
-        children = monthConstructor()
-      }
-    }
-  )
+  val calendar = ObjectProperty(new VBox)
 
   val caption = new StringProperty(runningInstance.getView._1.interval.monthNameWithYear)
 
@@ -49,13 +54,19 @@ class GUICalendarView(runningInstance: CalendarApp){
 
   def update() =
 
-    runningInstance.getView._1 match
+    val viewAndEvents = runningInstance.getView
+
+    viewAndEvents._1 match
       case d: DayView =>
         calendar() = new VBox{
-          children = new Label{
-            text = "day"
+          hgrow = Priority.ALWAYS
+          children = new ScrollPane{
+            prefViewportHeight = 1500
+            fitToWidth = true
+            vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+            content = dayConstructor(d, viewAndEvents._2)
+            }
           }
-        }
       case w: WeekView =>
         calendar() = new VBox{
           children = new Label{
@@ -65,17 +76,84 @@ class GUICalendarView(runningInstance: CalendarApp){
       case m: MonthView =>
         calendar() = new VBox{
           children = new FlowPane {
-            children = monthConstructor()
+            children = monthConstructor(m, viewAndEvents._2)
           }
         }
 
     caption() = runningInstance.getView._1.interval.monthNameWithYear
 
-  private def dayConstructor() = ???
+  private def dayConstructor(view: DayView, events: Vector[Event]): GridPane = 
 
-  private def monthConstructor(): Seq[VBox] =
+    case class row(e: Vector[Event], i: AnyInterval)
+
+    val rows = Buffer[row]()
+    val rowsToRender = Buffer[HBox]()
+  
+    for h <- 0 to 23 do
+      val i1 = AnyInterval(view.day.start.plusHours(h), view.day.start.plusHours(h).plusMinutes(30)) 
+      val i2 = AnyInterval(view.day.start.plusHours(h).plusMinutes(30), view.day.start.plusHours(h+1))
+      rows += row(events.filter(i1.contains(_)), i1)
+      rows += row(events.filter(i2.contains(_)), i2)
+
+    val leftcol = new ColumnConstraints
+    leftcol.hgrow = Priority.Never
+    val rightcol = new ColumnConstraints
+    rightcol.hgrow = Priority.Always
+
+    val g = new GridPane{
+      hgap = 10
+      style = "-fx-border-color: black"
+    }
+    g.getColumnConstraints().add(leftcol)
+    g.getColumnConstraints().add(rightcol)
+
+    var isHour = true
+    var rowCounter = 0
+
+    for r <- rows do
+
+      var cellStyle = ""
+
+      if isHour then
+        g.add(new Label(r.i.start.getHour.toString), 0, rowCounter)
+        isHour = false
+        cellStyle = "-fx-border-style: solid none none none; -fx-border-color: black"
+      else
+        g.add(new Label("  "), 0, rowCounter)
+        isHour = true
+        cellStyle = ""
+
+      if !r.e.isEmpty then
+
+        val rowEvents = new HBox{
+          hgrow = Priority.Always
+          maxWidth = Double.MaxValue
+        }
+
+        r.e.foreach(x => rowEvents.getChildren().add(new Label(x.name){
+          style = cellStyle + "; -fx-text-fill: black; -fx-background-color: red"
+          maxWidth = Double.MaxValue
+          hgrow = Priority.Always
+
+          onMouseClicked = e => println(x)
+        }))
+        g.add(rowEvents, 1, rowCounter)
+      else
+        val empty = new Label("empty"){
+          style = cellStyle
+          maxWidth = Double.MaxValue
+          hgrow = Priority.ALWAYS
+        }
+
+        g.add(empty, 1, rowCounter)
+
+      rowCounter += 1
+
+    g
+
+  private def monthConstructor(view: MonthView, events: Vector[Event]): Seq[VBox] =
     val vbox = Buffer[VBox]()
-    val days = runningInstance.getView._1.interval.asInstanceOf[Month].daysInMonth
+    val days = view.interval.asInstanceOf[Month].daysInMonth
     for i <- 1 to days do
       val day = new VBox{
         minWidth = 120

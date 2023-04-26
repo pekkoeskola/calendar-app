@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 package GUI
 
 import java.time.LocalDateTime
@@ -20,11 +20,18 @@ import scalafx.scene.layout.HBox
 import scalafx.scene.control.ChoiceBox
 import scalafx.collections.ObservableBuffer
 import scalafx.beans.property.BooleanProperty
+import scalafx.scene.control.CheckBox
+import scalafx.scene.control.Alert
+import scalafx.scene.control.Alert.AlertType
 
 
 case class NewEventDialogResult(success: Boolean, event: Option[Event], errorMsg: Option[String])
 
 case class ModifyorDeleteEventDialogResult(success: Boolean, isDelete: Boolean, event: Option[Event], originalEvent: Option[Event], errorMsg: Option[String])
+
+case class NewEventCategoryDialogResult(success: Boolean, newCategory: Option[EventCategory])
+
+case class DeleteEventCategoryDialogResult(success: Boolean, isDelete: Boolean, categoryToDelete: EventCategory)
 
 class GUIDialogs(runningInstance: CalendarApp):
 
@@ -102,6 +109,11 @@ class GUIDialogs(runningInstance: CalendarApp):
     val calendarChoiceBox = new ChoiceBox(calendarChoices)
     calendarChoiceBox.value() = calendarNames(0)
 
+    val eventCategoryNames = runningInstance.eventCategories.map(_.name)
+    val eventCategoryChoices = ObservableBuffer[String]()
+    eventCategoryChoices.addAll(eventCategoryNames)
+    val eventCategoryChoiceBox = new ChoiceBox(eventCategoryChoices)
+
     val grid = new GridPane() {
       hgap = 10
       vgap = 10
@@ -123,6 +135,9 @@ class GUIDialogs(runningInstance: CalendarApp):
 
       add(new Label("Location:"), 0, 4)
       add(locationField, 1, 4)
+
+      add(new Label("Event category:"), 0, 5)
+      add(eventCategoryChoiceBox, 1, 5)
     }
 
     dialog.resultConverter = dialogButton =>
@@ -140,16 +155,29 @@ class GUIDialogs(runningInstance: CalendarApp):
           val start = s
           val end = e
           val location = Option(locationField.text()).filter(_.trim.nonEmpty)
+          val eventCat: Option[EventCategory] = eventCategoryChoiceBox.value() match
+            case "" => None
+            case s: String =>
+              Some(runningInstance.findEventCategory(s))
+            case null => None
 
-          Event(name, cal, start, end, location, None, None, None)
+          Event(name, cal, start, end, location, None, eventCat, None)
         
         end buildEvent
 
+        val returnedEvent = buildEvent
+
         if s.isBefore(e) then
-          //finish this!!
-          NewEventDialogResult(true, Some(buildEvent), None) 
+          if returnedEvent.eventCategory.isEmpty then
+            NewEventDialogResult(true, Some(returnedEvent), None)
+          else
+            val intvl = AnyInterval(returnedEvent.startTime, returnedEvent.endTime)
+            if returnedEvent.eventCategory.get.cantOverlapWith.flatMap(cat => runningInstance.findAllEventsByCategory(cat)).forall(!intvl.contains(_)) then
+               NewEventDialogResult(true, Some(returnedEvent), None)
+            else
+              NewEventDialogResult(false, None, Some("Event overlaps with another event in a category that it isn't allowed to overlap with."))
         else
-          NewEventDialogResult(false, None, Some("Event end was before start"))
+          NewEventDialogResult(false, None, Some("Event end was before start."))
       else
         null
 
@@ -219,13 +247,13 @@ class GUIDialogs(runningInstance: CalendarApp):
     }
 
     val ehours = new ChoiceBox(hchoices){
-      value = eventToModify.endTime.getHour().toString()
+      value = if eventToModify.endTime.getHour() < 10 then "0" + eventToModify.endTime.getHour().toString() else eventToModify.endTime.getHour().toString()
     }
     val emins1 = new ChoiceBox(m1choices){
-      value = if emins < 10 then 0.toString() else smins.toString()(0).toString()
+      value = if emins < 10 then 0.toString() else emins.toString()(0).toString()
     }
     val emins2 = new ChoiceBox(m2choices){
-      value = if emins < 10 then smins.toString()(0).toString() else smins.toString()(1).toString()
+      value = if emins < 10 then emins.toString()(0).toString() else emins.toString()(1).toString()
     }
 
     val endTime = new HBox{
@@ -242,6 +270,11 @@ class GUIDialogs(runningInstance: CalendarApp):
     calendarChoices.addAll(calendarNames)
     val calendarChoiceBox = new ChoiceBox(calendarChoices)
     calendarChoiceBox.value() = calendarNames(0)
+
+    val eventCategoryNames = runningInstance.eventCategories.map(_.name)
+    val eventCategoryChoices = ObservableBuffer[String]()
+    eventCategoryChoices.addAll(eventCategoryNames)
+    val eventCategoryChoiceBox = new ChoiceBox(eventCategoryChoices)
 
     val grid = new GridPane() {
       hgap = 10
@@ -264,6 +297,9 @@ class GUIDialogs(runningInstance: CalendarApp):
 
       add(new Label("Location:"), 0, 4)
       add(locationField, 1, 4)
+
+      add(new Label("Event category:"), 0, 5)
+      add(eventCategoryChoiceBox, 1, 5)
     }
 
     dialog.resultConverter = dialogButton =>
@@ -281,16 +317,29 @@ class GUIDialogs(runningInstance: CalendarApp):
           val start = s
           val end = e
           val location = Option(locationField.text()).filter(_.trim.nonEmpty)
-
-          Event(name, cal, start, end, location, None, None, None)
+          val eventCat: Option[EventCategory] = eventCategoryChoiceBox.value() match
+            case "" => None
+            case s: String =>
+              Some(runningInstance.findEventCategory(s))
+            case null => None
+            
+          Event(name, cal, start, end, location, None, eventCat, None)
         
         end buildEvent
 
+        val returnedEvent = buildEvent
+
         if s.isBefore(e) then
-          //finish this!!
-          ModifyorDeleteEventDialogResult(true, false, Some(buildEvent), Some(eventToModify),None) 
+          if returnedEvent.eventCategory.isEmpty then
+            ModifyorDeleteEventDialogResult(true, false, Some(buildEvent), Some(eventToModify),None)
+          else
+            val intvl = AnyInterval(returnedEvent.startTime, returnedEvent.endTime)
+            if returnedEvent.eventCategory.get.cantOverlapWith.flatMap(cat => runningInstance.findAllEventsByCategory(cat)).forall(!intvl.contains(_)) then
+              ModifyorDeleteEventDialogResult(true, false, Some(buildEvent), Some(eventToModify),None) 
+            else
+              ModifyorDeleteEventDialogResult(false, false, None, None, Some("Event overlaps with another event in a category that it isn't allowed to overlap with."))
         else
-          ModifyorDeleteEventDialogResult(false, false, None, None, Some("Event end was before start"))
+          ModifyorDeleteEventDialogResult(false, false, None, None, Some("Event end was before start."))
       else if (dialogButton == deleteEventButtonType) then
         ModifyorDeleteEventDialogResult(true, true, None, Some(eventToModify), None)
       else
@@ -302,3 +351,76 @@ class GUIDialogs(runningInstance: CalendarApp):
 
   end modifyorDeleteEventDialog
 
+  def newEventCategoryDialog: Dialog[NewEventCategoryDialogResult] =
+
+    val dialog = new Dialog[NewEventCategoryDialogResult](){
+      //initOwner(stage)
+      title = "Create Event Category"
+      headerText = "Create Event Category Here"
+    }
+
+    val createCategoryButtonType = new ButtonType("Create Event Category", ButtonData.OKDone)
+    dialog.dialogPane().buttonTypes = Seq(createCategoryButtonType, ButtonType.Cancel)
+    val createCategoryButton = dialog.dialogPane().lookupButton(createCategoryButtonType)
+
+    createCategoryButton.disable = true
+
+    val nameField = new TextField
+    
+    nameField.text.onChange { (_, _, newValue) =>
+      createCategoryButton.disable = newValue.trim().isEmpty
+    }
+
+    val colors = new ObservableBuffer[String]
+    colors.addAll(runningInstance.availableColors)
+    val colorChoiceBox = new ChoiceBox(colors)
+    colorChoiceBox.value() = colors(0)
+
+    val otherCategories = runningInstance.eventCategories
+
+    val otherCategoriesBoxed = new VBox{
+      children = otherCategories.map(cat => new CheckBox(cat.name))
+    }
+
+    val grid = new GridPane() {
+      hgap = 10
+      vgap = 10
+      padding = Insets(20, 100, 10, 10)
+
+      add(new Label("Name:"), 0, 0)
+      add(nameField, 1, 0)
+
+      add(new Label("Color:"), 0, 1)
+      add(colorChoiceBox, 1, 1)
+
+      add(new Label("Cant overlap with:"), 0, 2)
+      add(otherCategoriesBoxed, 1, 2)
+    }
+
+    dialog.resultConverter = dialogButton =>
+      if (dialogButton == createCategoryButtonType) then
+
+        val cantoverlapwith = otherCategoriesBoxed.getChildren()
+          .filter(_.asInstanceOf[javafx.scene.control.CheckBox].isSelected() == true)
+          .map(_.asInstanceOf[javafx.scene.control.CheckBox].getText())
+          .map(runningInstance.findEventCategory(_))
+        if !runningInstance.eventCategories.map(_.name).contains(nameField.text()) then
+          NewEventCategoryDialogResult(true, Some(EventCategory(nameField.text(), colorChoiceBox.value(), cantoverlapwith)))
+        else
+          NewEventCategoryDialogResult(false, None)
+      else 
+        null
+
+    dialog.dialogPane().content = grid
+
+    dialog
+
+  end newEventCategoryDialog
+
+  def deleteEventCategoryDialog(eventCategory: EventCategory): Alert = 
+    
+    new Alert(AlertType.Confirmation) {
+      title = "Confirm deletion"
+      headerText = s"You are about to delete event category ${eventCategory.name}. This will remove it from all events currently in said category."
+      contentText = "Are you sure?"
+    }

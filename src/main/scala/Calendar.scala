@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 
 import scala.collection.mutable.Buffer
 

@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 
 import java.time.{LocalDate, LocalDateTime, DayOfWeek, Year}
 import java.time.temporal.{TemporalAdjusters, ChronoUnit}

@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 package GUI
 
 //unused right now

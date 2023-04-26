@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 package GUI
 
 import java.time.LocalDate
@@ -26,7 +26,6 @@ import scalafx.scene.control.Alert.AlertType
 
 /** Manages the calendar view part of the GUI
   * 
-  *
   * @param runningInstance the currently running instance of CalendarApp connected to the GUI
   */
 class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
@@ -134,15 +133,18 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
           maxWidth = Double.MaxValue
         }
 
-        r.e.foreach(x => rowEvents.getChildren().add(new Label(x.name){
-          style = cellStyle + "; -fx-text-fill: black; -fx-background-color: red"
+        r.e.foreach(ev => rowEvents.getChildren().add(new Label(ev.name){
+          val col = ev.eventCategory match
+            case Some(cat) => cat.color
+            case None => "gray"
+          style = cellStyle + "; -fx-text-fill: black; -fx-background-color: " + col
           maxWidth = Double.MaxValue
           hgrow = Priority.Always
 
           onMouseClicked = handle{
             var failed = true
             while failed do
-              val dialog = dialogs.modifyorDeleteEventDialog(x)
+              val dialog = dialogs.modifyorDeleteEventDialog(ev)
 
               val result = dialog.showAndWait()
 
@@ -150,19 +152,18 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
                 case Some(res: ModifyorDeleteEventDialogResult) =>
                   res match
                     case ModifyorDeleteEventDialogResult(true, false, Some(e), Some(ogEvent), None) =>
-                      runningInstance.addEvent(e)
+                      runningInstance.modifyEvent(ogEvent, e)
                       update()
                       failed = false
                     case ModifyorDeleteEventDialogResult(false, false, None, None,Some(d)) =>
                       failed = true
                       new Alert(AlertType.Error) {
                         title = "Error Dialog"
-                        headerText = "Error during event creation"
+                        headerText = "Error during event modification"
                         contentText = d
                       }.showAndWait()
                     case ModifyorDeleteEventDialogResult(true, true, None, Some(ogEvent), None) => 
                       runningInstance.deleteEvent(ogEvent)
-                      println("deleted")
                       failed = false
                     case _ =>
                   end match
@@ -173,7 +174,6 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
               
             end while
             update()
-            println("updated")
           }
         }))
         g.add(rowEvents, 1, rowCounter)
@@ -182,6 +182,37 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
           style = cellStyle
           maxWidth = Double.MaxValue
           hgrow = Priority.ALWAYS
+
+          onMouseClicked = handle{
+            var failed = true
+            while failed do
+              val dialog = dialogs.createNewEventDialog
+
+              val result = dialog.showAndWait()
+
+              result match
+                case Some(res: NewEventDialogResult) =>
+                  res match
+                    case NewEventDialogResult(true,Some(e), None) =>
+                      runningInstance.addEvent(e)
+                      update()
+                      failed = false
+                    case NewEventDialogResult(false, None, Some(d)) =>
+                      failed = true
+                      new Alert(AlertType.Error) {
+                        title = "Error Dialog"
+                        headerText = "Error during event creation"
+                        contentText = d
+                      }.showAndWait()
+                    case _ =>
+                  end match
+
+                case _ => 
+                  failed = false
+              end match
+              
+            end while
+          }
         }
 
         g.add(empty, 1, rowCounter)

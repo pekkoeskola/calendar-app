@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 package CLI
 
 import scala.io.StdIn.readLine

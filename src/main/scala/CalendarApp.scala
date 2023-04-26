@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 
 import scala.collection.mutable.Buffer
 
@@ -21,6 +21,12 @@ class CalendarApp:
 
   private val _eventCategories = Buffer[EventCategory]()
 
+  private val _availableColors = Buffer[String]("blue", "darkblue", "dodgerblue", "deepskyblue", "mediumturqoise", 
+    "red", "lightcoral", "lightpink", "lightsalmon", 
+    "yellow", "khaki", "gold", "goldenrod", 
+    "green", "mediumseagreen", "olive",
+    "silver", "gray")
+
   private val calendarFilters = Buffer[Calendar]()
 
   private val eventCategoryFilters = Buffer[EventCategory]()
@@ -37,6 +43,8 @@ class CalendarApp:
 
   def eventCategories = _eventCategories
 
+  def availableColors = _availableColors
+
 
   //stub
   def startUp() =
@@ -45,13 +53,15 @@ class CalendarApp:
 
     this.addCalendar(Calendar("test"))
 
-    this.addEvent(Event("event1", calendars(0), LocalDateTime.now(), LocalDateTime.now().plusHours(2)))
+    val cat = EventCategory("category1", "khaki",Buffer[EventCategory]())
+
+    this.addEvent(Event("event1", calendars(0), LocalDateTime.now(), LocalDateTime.now().plusHours(2), eventCategory = Some(cat)))
 
     this.addEvent(Event("Event2", calendars(0), LocalDateTime.now().plusWeeks(1), LocalDateTime.now().plusWeeks(1)))
 
     this.addEvent(Event("event3", calendars(0), LocalDateTime.now(), LocalDateTime.now().plusHours(1)))
 
-    _eventCategories += EventCategory("category1", Buffer[EventCategory]())
+    _eventCategories += cat
 
     currentViewEvents = fetchEvents()
 
@@ -61,7 +71,7 @@ class CalendarApp:
     val retevents = Buffer[Event]()
 
     for c <- (calendars.diff(calendarFilters))
-      e <- c.events if currentView.interval.contains(e) && !eventCategoryFilters.contains(e.eventCategory) 
+      e <- c.events if currentView.interval.contains(e) && !eventCategoryFilters.contains(e.eventCategory.getOrElse(None)) 
     do retevents += e
 
     retevents.toVector
@@ -83,11 +93,23 @@ class CalendarApp:
     event.calendar.addEvent(event)
     update()
 
-  def modifyEvent(event: Event) = ???
+  def modifyEvent(originalEvent: Event, modifiedEvent: Event) =
+    deleteEvent(originalEvent)
+    addEvent(modifiedEvent)
 
   def deleteEvent(event: Event) = 
     event.calendar.deleteEvent(event)
     update()
+
+  def findAllEventsByCategory(eventCategory: EventCategory): Vector[Event] = 
+    calendars.flatMap(_.events).filter(_.eventCategory.getOrElse(None) == eventCategory).toVector
+
+  def addEventCategory(eventCategory: EventCategory) =
+    _eventCategories += eventCategory
+
+  def deleteEventCategory(eventCategory: EventCategory) =
+    calendars.flatMap(_.events).filter(_.eventCategory.getOrElse(None) == eventCategory).foreach(_.eventCategory = None)
+    _eventCategories -= eventCategory
 
 
   def changeViewType(i: Int) = //TODO
@@ -134,7 +156,9 @@ class CalendarApp:
 
   
   def findCalendar(calendarName: String): Calendar = 
-    
     calendars.find(_.name == calendarName).getOrElse(throw CantFindException("can't find calendar with given name"))
+
+  def findEventCategory(categoryName: String): EventCategory = 
+    eventCategories.find(_.name == categoryName).getOrElse(throw CantFindException("can't find category with given name"))
 
   

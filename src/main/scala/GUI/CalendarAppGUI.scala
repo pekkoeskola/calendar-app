@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 package GUI
 
 import scala.collection.mutable.Buffer
@@ -43,6 +43,7 @@ import scalafx.beans.property.StringProperty
 import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.CheckBox
+import scalafx.scene.input.KeyCode.C
 
 object CalendarAppGUI extends JFXApp3{
   def start(): Unit = {
@@ -98,7 +99,6 @@ object CalendarAppGUI extends JFXApp3{
                   end match
 
                 case _ => 
-                  println("cancelled")
                   failed = false
               end match
               
@@ -161,6 +161,9 @@ object CalendarAppGUI extends JFXApp3{
       add(rightButtons, 1, 0)
       columnConstraints = Seq(leftcol, rightcol)
       padding = ins
+    }
+
+    val l = new BorderPane{
     }
 
     //attach everything to BorderPane which is the main fram of the GUI

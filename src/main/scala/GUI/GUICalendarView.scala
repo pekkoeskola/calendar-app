@@ -22,6 +22,7 @@ import scalafx.scene.layout.Priority
 import scalafx.scene.layout.ColumnConstraints
 import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
+import calendarapp.Day.getDay
 
 
 /** Manages the calendar view part of the GUI
@@ -260,11 +261,30 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
     val vbox = Buffer[VBox]()
     val days = view.interval.asInstanceOf[Month].daysInMonth
     for i <- 1 to days do
+      val da = getDay(view.month.start.plusHours(1).plusDays(i - 1)) 
+
+      val devents = events.filter(e => da.contains(e)).take(2)
+
+      val levents = devents.map(x => new Label(x.name)) 
+
       val day = new VBox{
         minWidth = 120
         minHeight = 120
-        children = {new Text(s"${i}")}
+        style = "-fx-border-color: black"
+        children = Seq(new Label(s"${i}"))
+        onMouseClicked = handle{
+          changeViewType(CalendarView.DAYVIEW)
+          goto(view.month.start.plusHours(1).plusDays(i - 1).toLocalDate())
+        }
       }
+      
+      if levents.length == 1 then
+        day.getChildren().add(levents(0))
+
+      else if levents.length == 2 then
+        day.getChildren().add(levents(0))
+        day.getChildren().add(levents(1))
+
       vbox += day
     vbox.toSeq
   end monthConstructor

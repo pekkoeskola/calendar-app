@@ -72,9 +72,7 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
           }
       case w: WeekView =>
         calendar() = new VBox{
-          children = new Label{
-            text = "Week"
-          }
+          children = weekConstructor(w,viewAndEvents._2)
         }
       case m: MonthView =>
         calendar() = new VBox{
@@ -85,7 +83,7 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
 
     caption() = runningInstance.getView._1.interval.monthNameWithYear
 
-  private def dayConstructor(view: DayView, events: Vector[Event]): GridPane = 
+  private def dayConstructor(view: DayView, events: Vector[Event]): VBox = 
 
     case class row(e: Vector[Event], i: AnyInterval)
 
@@ -219,7 +217,44 @@ class GUICalendarView(runningInstance: CalendarApp, dialogs: GUIDialogs){
 
       rowCounter += 1
 
-    g
+    new VBox{
+      children = Seq(new Label(view.interval.asInstanceOf[Day].dayOfWeekandDate), g)
+    }
+
+  private def weekConstructor(view: WeekView, events: Vector[Event]): HBox =
+
+    val week = new HBox
+
+    val monday: DayView = DayView(Day.getDay(view.week.start)) 
+
+    val tuesday: DayView = monday.next.asInstanceOf[DayView]
+
+    val wednesday: DayView = tuesday.next.asInstanceOf[DayView]
+
+    val thursday: DayView = wednesday.next.asInstanceOf[DayView]
+
+    val friday: DayView = thursday.next.asInstanceOf[DayView]
+
+    val saturday: DayView = friday.next.asInstanceOf[DayView]
+
+    val sunday: DayView = saturday.next.asInstanceOf[DayView]
+
+    val theDays = Vector[DayView](monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+
+    for d <- theDays do
+
+      val newd = new ScrollPane{
+        prefViewportHeight = 1500
+        vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        content = dayConstructor(d, events.filter(e => d.interval.contains(e)))
+      }
+
+      week.getChildren().add(newd)
+
+
+    week
+
+  end weekConstructor
 
   private def monthConstructor(view: MonthView, events: Vector[Event]): Seq[VBox] =
     val vbox = Buffer[VBox]()

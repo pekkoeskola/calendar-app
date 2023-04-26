@@ -3,6 +3,8 @@ package calendarapp
 import scala.collection.mutable.Buffer
 
 import java.time.{LocalDate, LocalDateTime}
+import calendarapp.IO.WriteCalendar
+import calendarapp.IO.ReadCalendar
 
 
 
@@ -37,17 +39,29 @@ class CalendarApp:
 
   private var currentViewEvents: Vector[Event] = fetchEvents()
 
+  private val writer = new WriteCalendar
+
+  private val reader = new ReadCalendar
+
   def dateCursor = _dateCursor
 
-  def calendars = _calendars
+  def calendars = _calendars.toVector
 
-  def eventCategories = _eventCategories
+  def eventCategories = _eventCategories.toVector
 
-  def availableColors = _availableColors
+  def availableColors = _availableColors.toVector
 
-
-  //stub
+  
+  /** Performs relevant initialisation tasks, namely loading the calendar information from file to memory. 
+    * Called once and only once during application life cycle.
+    * 
+    */
   def startUp() =
+
+    readAndLoadAllCalendars()
+
+  //stub, meant for testing
+  def teststartUp() =
 
     currentTime = LocalDateTime.now()
 
@@ -85,7 +99,7 @@ class CalendarApp:
     currentViewEvents = fetchEvents()
 
   def addCalendar(calendar: Calendar) = 
-    calendars += calendar
+    _calendars += calendar
     update()
 
 
@@ -105,6 +119,7 @@ class CalendarApp:
     calendars.flatMap(_.events).filter(_.eventCategory.getOrElse(None) == eventCategory).toVector
 
   def addEventCategory(eventCategory: EventCategory) =
+    eventCategories.foreach(x => if eventCategory.cantOverlapWith.contains(x) then x.cantOverlapWith += eventCategory)
     _eventCategories += eventCategory
 
   def deleteEventCategory(eventCategory: EventCategory) =
@@ -160,5 +175,31 @@ class CalendarApp:
 
   def findEventCategory(categoryName: String): EventCategory = 
     eventCategories.find(_.name == categoryName).getOrElse(throw CantFindException("can't find category with given name"))
+
+  def allApplicableEventCategories(calendar: Calendar) = ???
+
+  /** Writes all calendar data for the current session to file. Only called once per application lifecycle (at the end).
+    * 
+    */
+  def writeAllCalendarstoFile() = 
+
+    calendars.foreach(c => writer.writeCalendar(c, Some(eventCategories)))
+
+  /** Performs the actual work of reading and loading files into memory. Only called by startup(). 
+    * 
+    */
+  private def readAndLoadAllCalendars()=
+
+    val calendarFileNames = reader.getCalendarFileNames()
+
+    _eventCategories.appendAll(reader.readEventCategories(calendarFileNames.head).getOrElse(Vector[EventCategory]())) 
+
+    for f <- calendarFileNames do
+    
+      reader.readCalendar(f, eventCategories) match
+        case Some(c) => addCalendar(c)
+        case None => println("error")
+
+
 
   

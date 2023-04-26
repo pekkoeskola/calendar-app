@@ -9,6 +9,8 @@ class Event(
   var endTime: LocalDateTime, 
   var location: Option[String] = None,
   var participants: Option[String] = None,
+  var webLink: Option[String] = None,
+  var description: Option[String] = None,
   var eventCategory: Option[EventCategory] = None,
   var reminder: Option[Reminder] = None):
 

@@ -55,6 +55,8 @@ class GUIDialogs(runningInstance: CalendarApp):
     }
     val locationField = new TextField
     val participantsField = new TextField
+    val webLinkField = new TextField
+    val descriptionField = new TextField
 
     val dp1 = new DatePicker(LocalDate.now())
 
@@ -136,8 +138,17 @@ class GUIDialogs(runningInstance: CalendarApp):
       add(new Label("Location:"), 0, 4)
       add(locationField, 1, 4)
 
-      add(new Label("Event category:"), 0, 5)
-      add(eventCategoryChoiceBox, 1, 5)
+      add(new Label("Participants:"), 0, 5)
+      add(participantsField, 1, 5)
+
+      add(new Label("Web link:"), 0, 6)
+      add(webLinkField, 1, 6)
+
+      add(new Label("Description:"), 0, 7)
+      add(descriptionField, 1, 7)
+
+      add(new Label("Event category:"), 0, 8)
+      add(eventCategoryChoiceBox, 1, 8)
     }
 
     dialog.resultConverter = dialogButton =>
@@ -155,13 +166,18 @@ class GUIDialogs(runningInstance: CalendarApp):
           val start = s
           val end = e
           val location = Option(locationField.text()).filter(_.trim.nonEmpty)
+          val participants = Option(participantsField.text()).filter(_.trim.nonEmpty)
+          val webLink = Option(webLinkField.text()).filter(_.trim.nonEmpty)
+          val description = Option(descriptionField.text()).filter(_.trim.nonEmpty)
+
+
           val eventCat: Option[EventCategory] = eventCategoryChoiceBox.value() match
             case "" => None
             case s: String =>
               Some(runningInstance.findEventCategory(s))
             case null => None
 
-          Event(name, cal, start, end, location, None, eventCat, None)
+          Event(name, cal, start, end, location, participants, webLink, description, eventCat, None)
         
         end buildEvent
 
@@ -212,7 +228,14 @@ class GUIDialogs(runningInstance: CalendarApp):
       text = eventToModify.location.getOrElse("")
     }
     val participantsField = new TextField{
-      text = eventToModify.location.getOrElse("")
+      text = eventToModify.participants.getOrElse("")
+    }
+
+    val webLinkField = new TextField{
+      text = eventToModify.webLink.getOrElse("")
+    }
+    val descriptionField = new TextField{
+      text = eventToModify.description.getOrElse("")
     }
 
     val dp1 = new DatePicker(eventToModify.startTime.toLocalDate())
@@ -298,8 +321,17 @@ class GUIDialogs(runningInstance: CalendarApp):
       add(new Label("Location:"), 0, 4)
       add(locationField, 1, 4)
 
-      add(new Label("Event category:"), 0, 5)
-      add(eventCategoryChoiceBox, 1, 5)
+      add(new Label("Participants:"), 0, 5)
+      add(participantsField, 1, 5)
+
+      add(new Label("Web link:"), 0, 6)
+      add(webLinkField, 1, 6)
+
+      add(new Label("Description:"), 0, 7)
+      add(descriptionField, 1, 7)
+
+      add(new Label("Event category:"), 0, 8)
+      add(eventCategoryChoiceBox, 1, 8)
     }
 
     dialog.resultConverter = dialogButton =>
@@ -317,13 +349,17 @@ class GUIDialogs(runningInstance: CalendarApp):
           val start = s
           val end = e
           val location = Option(locationField.text()).filter(_.trim.nonEmpty)
+          val participants = Option(participantsField.text()).filter(_.trim.nonEmpty)
+          val webLink = Option(webLinkField.text()).filter(_.trim.nonEmpty)
+          val description = Option(descriptionField.text()).filter(_.trim.nonEmpty)
+
           val eventCat: Option[EventCategory] = eventCategoryChoiceBox.value() match
             case "" => None
             case s: String =>
               Some(runningInstance.findEventCategory(s))
             case null => None
-            
-          Event(name, cal, start, end, location, None, eventCat, None)
+
+          Event(name, cal, start, end, location, participants, webLink, description, eventCat, None)
         
         end buildEvent
 

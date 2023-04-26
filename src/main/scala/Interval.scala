@@ -10,10 +10,8 @@ sealed abstract class Interval(val start: LocalDateTime, val end: LocalDateTime)
 
   def monthNameWithYear: String = _monthNameWithYear
 
-  //TODO decide on date interval
   def contains(e: Event): Boolean = 
     
-    //review this
     (e.startTime.isAfter(start.minusSeconds(1)) && e.startTime.isBefore(end)) 
     || (e.endTime.isAfter(start) && e.endTime.isBefore(end.plusSeconds(2)) 
     || ((e.startTime.isBefore(start)) && e.endTime.isAfter(end)))

@@ -44,6 +44,7 @@ import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control.CheckBox
 import scalafx.scene.input.KeyCode.C
+import scalafx.scene.control.ButtonType
 
 object CalendarAppGUI extends JFXApp3{
   def start(): Unit = {
@@ -137,10 +138,7 @@ object CalendarAppGUI extends JFXApp3{
           text = ">"
           onAction = {e =>
             calendarView.nextView()}
-        },                   
-        new Button{
-          text = "search"
-        }
+        }                   
       )
     }
 
@@ -188,6 +186,23 @@ object CalendarAppGUI extends JFXApp3{
       height = 800
 
       scene = monthView
+
+      onCloseRequest = handle {
+        
+        val a = new Alert(AlertType.Warning) {
+          initOwner(stage)
+          title = "Saving Events"
+          headerText = "Saving events to file in progress."
+          contentText = "The App will exit automatically, please do not force close."
+          buttonTypes = ObservableBuffer[ButtonType]()
+        }
+
+        a.show()
+
+        currentAppInstance.writeAllCalendarstoFile()
+
+        a.close()
+      }
     } 
   }
 }

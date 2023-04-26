@@ -1,4 +1,4 @@
-package CalendarApp
+package calendarapp
 
 import java.time.LocalDateTime
 
@@ -17,7 +17,6 @@ object Test extends App:
 
   var montht = Month.getMonth(t)
 
-  val e = Event("testevent", LocalDateTime.now(), dayt.next.start, None, None)
 
   println(t)
 
@@ -29,6 +28,4 @@ object Test extends App:
   println(week2)
 
   println(montht)
-
-  println(dayt2.contains(e))
 
